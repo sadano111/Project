@@ -5,7 +5,7 @@ from route.line import line
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-app.include_router(route)
+# app.include_router(route) ไม่ได้ใช้
 app.include_router(ocr_router)
 app.include_router(line)
 
