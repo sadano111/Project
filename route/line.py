@@ -2,7 +2,7 @@ import os
 import sys
 
 from fastapi import Request, FastAPI, HTTPException, APIRouter
-from config.db import collection_image
+from config.db import collection_image, collection_line
 
 from linebot.v3.webhook import WebhookParser
 from linebot.v3.messaging import (
@@ -12,6 +12,8 @@ from linebot.v3.messaging import (
     ReplyMessageRequest,
     TextMessage
 )
+from linebot.models import TextSendMessage
+
 from linebot.v3.exceptions import (
     InvalidSignatureError
 )
@@ -49,23 +51,17 @@ async def handle_callback(request: Request):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
 
-    # for data in collection_image.find():
-    #     if data["status"] == False:
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
 
+            name = data["result"][0] + " " + data["result"][1]
+            line_id = collection_line.find_one({"name": name})
 
+            if line_id:
+                id = line_id["line"]
 
-# ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
-    for event in events:
-        if not isinstance(event, MessageEvent):
-            continue
-        if not isinstance(event.message, TextMessageContent):
-            continue
+                message = collection_image.find_one("result")
+            
+                line_bot_api.push_message(id, message)
 
-        await line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
-
-    return 'OK'
