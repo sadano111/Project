@@ -62,7 +62,8 @@ async def handle_callback(request: Request):
             if line_id:
                 id = line_id["line"]
             
-                message_text = " ".join(data.get("result", []))
+                # message_text = " ".join(data.get("result", []))
+                message_text = "Hello!"
                 if message_text:
                     message = TextSendMessage(text=message_text)
                     response = await line_bot_api.push_message(id, messages=message)
