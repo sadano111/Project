@@ -62,12 +62,10 @@ async def handle_callback(request: Request):
             if line_id:
                 id = line_id["line"]
             
-                # message_text = " ".join(data.get("result", []))
-                message_text = "Hello!"
+                message_text = " ".join(data.get("result", []))
                 if message_text:
                     message = TextSendMessage(text=message_text)
-                    response = await line_bot_api.push_message(id, messages=message)
-                    print(response.json())
+                    await line_bot_api.push_message(id, messages=message)
 
                     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
         
