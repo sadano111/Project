@@ -1,21 +1,8 @@
-# -*- coding: utf-8 -*-
-
-#  Licensed under the Apache License, Version 2.0 (the "License"); you may
-#  not use this file except in compliance with the License. You may obtain
-#  a copy of the License at
-#
-#       https://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-#  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-#  License for the specific language governing permissions and limitations
-#  under the License.
-
 import os
 import sys
 
 from fastapi import Request, FastAPI, HTTPException, APIRouter
+from config.db import collection_image, collection_line
 
 from linebot.v3.webhook import WebhookParser
 from linebot.v3.messaging import (
@@ -25,6 +12,8 @@ from linebot.v3.messaging import (
     ReplyMessageRequest,
     TextMessage
 )
+from linebot.models import TextSendMessage
+
 from linebot.v3.exceptions import (
     InvalidSignatureError
 )
@@ -33,16 +22,11 @@ from linebot.v3.webhooks import (
     TextMessageContent
 )
 
+from bson import ObjectId
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
 channel_access_token = 'VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU='
-if channel_secret is None:
-    print('Specify LINE_CHANNEL_SECRET as environment variable.')
-    sys.exit(1)
-if channel_access_token is None:
-    print('Specify LINE_CHANNEL_ACCESS_TOKEN as environment variable.')
-    sys.exit(1)
 
 configuration = Configuration(
     access_token=channel_access_token
@@ -67,17 +51,32 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    for event in events:
-        if not isinstance(event, MessageEvent):
-            continue
-        if not isinstance(event.message, TextMessageContent):
-            continue
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
 
-        await line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
+            name = data["result"][0] + " " + data["result"][1]
+            line_id = collection_line.find_one({"name": name})
 
-    return 'OK'
+            if line_id:
+                id = line_id["line"]
+            
+                message_text = " ".join(data.get("result", []))
+                if message_text:
+                    message = TextSendMessage(text=message_text)
+                    await line_bot_api.push_message(id, messages=message)
+
+                    collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    return 'ok'
+
+# @line.get("/get_test")
+# async def get():
+    
+#     for data in collection_image.find():
+#         name = data["result"][0] + " " + data["result"][1]
+#         print(name)
+#         line_id = collection_line.find_one({"name": name})
+#         print(line_id)
+#         id = line_id["line"]
+#         print(id)
+#     return {"status": "OK"}
