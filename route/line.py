@@ -15,7 +15,7 @@
 import os
 import sys
 
-from fastapi import Request, FastAPI, HTTPException
+from fastapi import Request, FastAPI, HTTPException, APIRouter
 
 from linebot.v3.webhook import WebhookParser
 from linebot.v3.messaging import (
@@ -48,13 +48,13 @@ configuration = Configuration(
     access_token=channel_access_token
 )
 
-app = FastAPI()
+line = APIRouter()
 async_api_client = AsyncApiClient(configuration)
 line_bot_api = AsyncMessagingApi(async_api_client)
 parser = WebhookParser(channel_secret)
 
 
-@app.post("/callback")
+@line.post("/callback")
 async def handle_callback(request: Request):
     signature = request.headers['X-Line-Signature']
 
