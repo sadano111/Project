@@ -64,7 +64,19 @@ async def handle_callback(request: Request):
                 message_text = " ".join(data.get("result", []))
                 if message_text:
                     message = TextSendMessage(text=message_text)
-                    await line_bot_api.push_message(id, messages=[message])
+                    # ตรวจสอบว่า `id` มีค่าที่ถูกต้องและ `message` เป็น instance ของ TextSendMessage
+                    if isinstance(id, str) and isinstance(message, TextSendMessage):
+                        await line_bot_api.push_message(id, messages=[message])
+                    else:
+                        print(f"Invalid id or message: id={id}, message={message}")
+
+                    # ไม่ต้องใช้ await ในการเรียก print
+                    print(f"Message sent to {id}")
+
+                    # ไม่ต้องใช้ await ในการเรียก print
+                    print(f"Invalid id or message: id={id}, message={message}")
+
+                    # await line_bot_api.push_message(id, messages=message)
 
                     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return 'ok'
