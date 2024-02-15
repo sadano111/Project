@@ -55,7 +55,7 @@ async def handle_callback(request: Request):
     message = TextSendMessage(text='Hello, this is a sample push message!')
 
     # Send the message using push_message
-    line_bot_api.push_message(user_id, messages=message)
+    line_bot_api.push_message(user_id, messages=[message])
 
     return 'ok'
     
