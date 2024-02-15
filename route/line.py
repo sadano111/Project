@@ -52,34 +52,30 @@ async def handle_callback(request: Request):
         raise HTTPException(status_code=400, detail="Invalid signature")
 
     for data in collection_image.find():
-        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-        if data["status"] == False:
+    # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+    if data["status"] == False:
+        name = data["result"][0] + " " + data["result"][1]
+        line_id = collection_line.find_one({"name": name})
 
-            name = data["result"][0] + " " + data["result"][1]
-            line_id = collection_line.find_one({"name": name})
+        if line_id:
+            id = line_id["line"]
+        
+            message_text = " ".join(data.get("result", []))
+            if message_text:
+                message = PushMessage(
+                    to=id,
+                    messages=[TextSendMessage(text=message_text)]
+                )
 
-            if line_id:
-                id = line_id["line"]
-            
-                message_text = " ".join(data.get("result", []))
-                if message_text:
-                    message = TextSendMessage(text=message_text)
-                    # ตรวจสอบว่า `id` มีค่าที่ถูกต้องและ `message` เป็น instance ของ TextSendMessage
-                    if isinstance(id, str) and isinstance(message, TextSendMessage):
-                        await line_bot_api.push_message(id, messages=[message])
-                    else:
-                        print(f"Invalid id or message: id={id}, message={message}")
-
-                    # ไม่ต้องใช้ await ในการเรียก print
+                try:
+                    await line_bot_api.push_message(**message.dict())
                     print(f"Message sent to {id}")
+                except Exception as e:
+                    print(f"Error sending message to {id}: {str(e)}")
 
-                    # ไม่ต้องใช้ await ในการเรียก print
-                    print(f"Invalid id or message: id={id}, message={message}")
-
-                    # await line_bot_api.push_message(id, messages=message)
-
-                    collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return 'ok'
+
 
 # @line.get("/get_test")
 # async def get():
