@@ -64,7 +64,7 @@ async def handle_callback(request: Request):
                 message_text = "มีพัสดุอยู่ที่ห้อง"
                 if message_text:
                     message = TextSendMessage(text=message_text)
-                    await line_bot_api.push_message(id, messages=message)
+                    await line_bot_api.push_message(id, messages=[message])
 
                     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return 'ok'
