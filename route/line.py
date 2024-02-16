@@ -58,7 +58,7 @@ async def handle_callback(request: Request):
             name = data["result"][0] + " " + data["result"][1]
             line_id = collection_line.find_one({"name": name})
 
-            line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=TextSendMessage(text='Hello World!'))
+            line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
             collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
 
             # if line_id:
