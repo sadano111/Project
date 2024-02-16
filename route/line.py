@@ -51,7 +51,22 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
+    for event in events:
+        if not isinstance(event, MessageEvent):
+            continue
+        if not isinstance(event.message, TextMessageContent):
+            continue
+
+        await line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=event.message.text)]
+            )
+        )
+
     line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
+
+    return 'ok'
 
     # for data in collection_image.find():
     #     # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
