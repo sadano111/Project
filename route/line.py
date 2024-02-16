@@ -51,15 +51,14 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    for data in collection_image.find():
-        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-        if data["status"] == False:
+    line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
 
-            name = data["result"][0] + " " + data["result"][1]
-            line_id = collection_line.find_one({"name": name})
+    # for data in collection_image.find():
+    #     # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+    #     if data["status"] == False:
 
-            line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
-            collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    #         name = data["result"][0] + " " + data["result"][1]
+    #         line_id = collection_line.find_one({"name": name})
 
             # if line_id:
             #     id = line_id["line"]
@@ -69,7 +68,7 @@ async def handle_callback(request: Request):
             #     line_bot_api.push_message(id, messages=[message])
 
             #     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
-    return 'ok'
+    # return 'ok'
 
 # @line.get("/get_test")
 # async def get():
