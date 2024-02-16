@@ -51,31 +51,25 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    user_id = 'U6282d22487c89a6ccae1c3a32c3c50b1'
-    message = TextSendMessage(text='Hello, this is a sample push message!')
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
 
-    # Send the message using push_message
-    line_bot_api.push_message(user_id, messages=[message])
+            name = data["result"][0] + " " + data["result"][1]
+            line_id = collection_line.find_one({"name": name})
 
-    return 'ok'
-    
+            line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', TextSendMessage(text='Hello World!'))
+            collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
 
-    # for data in collection_image.find():
-    #     # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-    #     if data["status"] == False:
-
-    #         name = data["result"][0] + " " + data["result"][1]
-    #         line_id = collection_line.find_one({"name": name})
-
-    #         if line_id:
-    #             id = line_id["line"]
+            # if line_id:
+            #     id = line_id["line"]
             
-    #             message_text = "มีพัสดุอยู่ที่ห้อง"
-    #             message = TextSendMessage(text=message_text)
-    #             line_bot_api.push_message(id, messages=[message])
+            #     message_text = "มีพัสดุอยู่ที่ห้อง"
+            #     message = TextSendMessage(text=message_text)
+            #     line_bot_api.push_message(id, messages=[message])
 
-    #             collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
-    # return 'ok'
+            #     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    return 'ok'
 
 # @line.get("/get_test")
 # async def get():
