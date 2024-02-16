@@ -62,9 +62,10 @@ async def handle_callback(request: Request):
                 reply_token=event.reply_token,
                 messages=[TextMessage(text=event.message.text)]
             )
+        await line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
         )
 
-    line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
+    
 
     return 'ok'
 
