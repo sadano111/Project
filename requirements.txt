@@ -9,3 +9,5 @@ fastapi
 python-multipart
 Pillow
 line-bot-sdk
+
+httpx
