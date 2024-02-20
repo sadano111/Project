@@ -51,38 +51,37 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    for event in events:
-        if not isinstance(event, MessageEvent):
-            continue
-        if not isinstance(event.message, TextMessageContent):
-            continue
+    # for event in events:
+    #     if not isinstance(event, MessageEvent):
+    #         continue
+    #     if not isinstance(event.message, TextMessageContent):
+    #         continue
 
-        await line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
-        await line_bot_api.push_message('U6282d22487c89a6ccae1c3a32c3c50b1', messages=[TextSendMessage(text='Hello World!')])
-
-    return 'ok'
-
-    # for data in collection_image.find():
-    #     # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-    #     if data["status"] == False:
-
-    #         name = data["result"][0] + " " + data["result"][1]
-    #         line_id = collection_line.find_one({"name": name})
-
-            # if line_id:
-            #     id = line_id["line"]
-            
-            #     message_text = "มีพัสดุอยู่ที่ห้อง"
-            #     message = TextSendMessage(text=message_text)
-            #     line_bot_api.push_message(id, messages=[message])
-
-            #     collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    #     await line_bot_api.reply_message(
+    #         ReplyMessageRequest(
+    #             reply_token=event.reply_token,
+    #             messages=[TextMessage(text=event.message.text)]
+    #         )
+    #     )
+        
     # return 'ok'
+
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
+
+            name = data["result"][0] + " " + data["result"][1]
+            line_id = collection_line.find_one({"name": name})
+
+            if line_id:
+                id = line_id["line"]
+            
+                message_text = "มีพัสดุอยู่ที่ห้อง"
+                message = TextSendMessage(text=message_text)
+                line_bot_api.push_message(id, messages=[message])
+
+                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    return 'ok'
 
 # @line.get("/get_test")
 # async def get():
