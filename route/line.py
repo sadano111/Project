@@ -1,8 +1,12 @@
 import os
 import sys
 
-from fastapi import Request, FastAPI, HTTPException, APIRouter
+from fastapi import Request, HTTPException, APIRouter
 from config.db import collection_image, collection_line
+
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+import httpx
 
 from linebot.v3.webhook import WebhookParser
 from linebot.v3.messaging import (
@@ -38,6 +42,29 @@ line_bot_api = AsyncMessagingApi(async_api_client)
 parser = WebhookParser(channel_secret)
 
 
+class LinePush(BaseModel):
+    to: str
+    messages: list[dict]
+
+@line.post("/push")
+async def push_message(payload: LinePush):
+    await push(payload.to, payload.messages)
+    return JSONResponse(content={"message": "OK"}, status_code=200)
+
+async def push(to: str, messages: list[dict]):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU=",  # Replace with your Line API access token
+    }
+    body = {"to": to, "messages": messages}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.line.me/v2/bot/message/push", headers=headers, json=body
+        )
+        print(f"status = {response.status_code}")
+
+
 @line.post("/callback")
 async def handle_callback(request: Request):
     signature = request.headers['X-Line-Signature']
@@ -51,20 +78,6 @@ async def handle_callback(request: Request):
     except InvalidSignatureError:
         raise HTTPException(status_code=400, detail="Invalid signature")
 
-    # for event in events:
-    #     if not isinstance(event, MessageEvent):
-    #         continue
-    #     if not isinstance(event.message, TextMessageContent):
-    #         continue
-
-    #     await line_bot_api.reply_message(
-    #         ReplyMessageRequest(
-    #             reply_token=event.reply_token,
-    #             messages=[TextMessage(text=event.message.text)]
-    #         )
-    #     )
-        
-    # return 'ok'
 
     for data in collection_image.find():
         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
