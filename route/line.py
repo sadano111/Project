@@ -46,9 +46,28 @@ class LinePush(BaseModel):
     to: str
     messages: list[dict]
 
+# @line.post("/push")
+# async def push_message(payload: LinePush):
+#     await push(payload.to, payload.messages)
+#     return JSONResponse(content={"message": "OK"}, status_code=200)
+
 @line.post("/push")
-async def push_message(payload: LinePush):
-    await push(payload.to, payload.messages)
+async def push_message():
+    # เพิ่มเงื่อนไขในการ push ตรงนี้
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
+
+            name = data["result"][0] + " " + data["result"][1]
+            line_id = collection_line.find_one({"name": name})
+
+            if line_id:
+                id = line_id["line"]
+                await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
+                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+
+    # **************************
+    # await push(payload.to, payload.messages)
     return JSONResponse(content={"message": "OK"}, status_code=200)
 
 async def push(to: str, messages: list[dict]):
