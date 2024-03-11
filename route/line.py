@@ -1,6 +1,3 @@
-import os
-import sys
-
 from fastapi import Request, HTTPException, APIRouter
 from config.db import collection_image, collection_line
 
@@ -53,12 +50,12 @@ class LinePush(BaseModel):
 
 @line.post("/push")
 async def push_message():
-    # เพิ่มเงื่อนไขในการ push ตรงนี้
     for data in collection_image.find():
         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
         if data["status"] == False:
 
-            name = data["result"][0] + " " + data["result"][1]
+            # name = data["result"][0] + " " + data["result"][1]
+            name = data["result"][0]
             line_id = collection_line.find_one({"name": name})
 
             if line_id:
@@ -66,8 +63,6 @@ async def push_message():
                 await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
                 collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
 
-    # **************************
-    # await push(payload.to, payload.messages)
     return JSONResponse(content={"message": "OK"}, status_code=200)
 
 async def push(to: str, messages: list[dict]):
@@ -84,6 +79,8 @@ async def push(to: str, messages: list[dict]):
         print(f"status = {response.status_code}")
 
 
+
+# แบบเก่าที่ทำครั้งแรก
 @line.post("/callback")
 async def handle_callback(request: Request):
     signature = request.headers['X-Line-Signature']
@@ -115,14 +112,18 @@ async def handle_callback(request: Request):
                 collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return 'ok'
 
-# @line.get("/get_test")
-# async def get():
-    
-#     for data in collection_image.find():
-#         name = data["result"][0] + " " + data["result"][1]
-#         print(name)
-#         line_id = collection_line.find_one({"name": name})
-#         print(line_id)
-#         id = line_id["line"]
-#         print(id)
-#     return {"status": "OK"}
+@line.get("/get_test")
+async def get():
+    for data in collection_image.find():
+        name = data["result"][0] + " " + data["result"][1]
+        print(name)
+        line_id = collection_line.find_one({"name": name})
+        print(line_id)
+        id = line_id["line"]
+        print(id)
+    return {"status": "OK"}
+
+
+@line.get("/get_all_data")
+async def get_all_data():
+    return collection_image.find()
