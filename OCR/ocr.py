@@ -91,6 +91,8 @@
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse
 from config.db import collection_image, collection_line
+from models.models import parcel
+from schemas.schemas import parcel_serializer, parcels_serializer
 from typing import List
 import cv2
 import easyocr
@@ -126,16 +128,17 @@ def process_ocr(image_content):
 
     return ocr_results
 
-
-@ocr_router.post("/perform-ocr-multiple/")
+@ocr_router.post("/perform-ocr-multiple")
 async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
     try:
         ocr_results = []
         for file in files:
             image_content = await file.read()
             ocr_result = process_ocr(image_content)
-            ocr_results.append({"filename": file.filename, "result": ocr_result})
-            collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
+            # ocr_results.append({"filename": file.filename, "result": ocr_result})
+            ocr_results.append({"result": ocr_result})
+            # print(ocr_results)
+            # collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
 
         return JSONResponse(content={"results": ocr_results}, status_code=200)
     except Exception as e:
