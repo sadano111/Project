@@ -3,9 +3,12 @@ from route.upload import route
 from OCR.ocr import ocr_router
 from route.line import line
 from fastapi.middleware.cors import CORSMiddleware
+from config.db import collection_line, collection_image
+
+
 
 app = FastAPI()
-app.include_router(route)
+# app.include_router(route) ไม่ได้ใช้แล้ว
 app.include_router(ocr_router)
 app.include_router(line)
 
