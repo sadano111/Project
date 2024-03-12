@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, APIRouter
-from config.db import collection_image, collection_line
+from config.db import collection_image, collection_line, collection_express
 
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -24,6 +24,9 @@ from linebot.v3.webhooks import (
 )
 
 from bson import ObjectId
+
+from models.models import User, express
+from schemas.schemas import user_serializer, users_serializer, exPress_serializer, express_serializer
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
@@ -99,7 +102,7 @@ async def handle_callback(request: Request):
         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
         if data["status"] == False:
 
-            name = data["result"][0] + " " + data["result"][1]
+            name = data["result"][0]
             line_id = collection_line.find_one({"name": name})
 
             if line_id:
@@ -112,18 +115,24 @@ async def handle_callback(request: Request):
                 collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return 'ok'
 
-@line.get("/get_test")
-async def get():
-    for data in collection_image.find():
-        name = data["result"][0] + " " + data["result"][1]
-        print(name)
-        line_id = collection_line.find_one({"name": name})
-        print(line_id)
-        id = line_id["line"]
-        print(id)
-    return {"status": "OK"}
+# @line.get("/get_test")
+# async def get():
+#     for data in collection_image.find():
+#         name = data["result"][0]
+#         print(name)
+#         line_id = collection_line.find_one({"name": name})
+#         print(line_id)
+#         id = line_id["line"]
+#         print(id)
+#     return {"status": "OK"}
 
 
 @line.get("/get_all_data")
 async def get_all_data():
-    return collection_image.find()
+    users = users_serializer(collection_image.find())
+    return {"status": "OK", "data":users}
+
+@line.post("/express")
+async def post_express(data:express):
+    collection_express.insert_one(dict(data))
+    return {"status": "OK", "data":exPress_serializer(collection_express.find())}
