@@ -7,6 +7,7 @@ class User(BaseModel):
 
 class parcel(BaseModel):
     to: str
+    
 
 class express(BaseModel):
     name: str
