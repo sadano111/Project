@@ -119,3 +119,13 @@ async def handle_callback(request: Request):
         )
 
     return 'OK'
+
+@line.get("/get_all_data")
+async def get_all_data():
+    users = users_serializer(collection_image.find())
+    return {"status":"ok", "data":users}
+
+@line.post("/express")
+async def post_express(data:express):
+    collection_express.insert_one(dict(data))
+    return {"status":"ok", "data":exPress_serializer(collection_express.find())}
