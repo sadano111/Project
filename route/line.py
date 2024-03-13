@@ -102,37 +102,20 @@ async def handle_callback(request: Request):
         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
         if data["status"] == False:
 
-            name = data["result"][0]
-            line_id = collection_line.find_one({"name": name})
-
-            if line_id:
-                id = line_id["line"]
-            
-                message_text = "มีพัสดุอยู่ที่ห้อง"
-                message = TextSendMessage(text=message_text)
-                line_bot_api.push_message(id, messages=[message])
-
-                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
-    return 'ok'
-
-# @line.get("/get_test")
-# async def get():
-#     for data in collection_image.find():
-#         name = data["result"][0]
-#         print(name)
-#         line_id = collection_line.find_one({"name": name})
-#         print(line_id)
-#         id = line_id["line"]
-#         print(id)
-#     return {"status": "OK"}
 
 
-@line.get("/get_all_data")
-async def get_all_data():
-    users = users_serializer(collection_image.find())
-    return {"status": "OK", "data":users}
+# ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
+    for event in events:
+        if not isinstance(event, MessageEvent):
+            continue
+        if not isinstance(event.message, TextMessageContent):
+            continue
 
-@line.post("/express")
-async def post_express(data:express):
-    collection_express.insert_one(dict(data))
-    return {"status": "OK", "data":exPress_serializer(collection_express.find())}
+        await line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=event.message.text)]
+            )
+        )
+
+    return 'OK'
