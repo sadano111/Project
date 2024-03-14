@@ -129,3 +129,8 @@ async def get_all_data():
 async def post_express(data:express):
     collection_express.insert_one(dict(data))
     return {"status":"ok", "data":exPress_serializer(collection_express.find())}
+
+@line.get("/getdetail")
+async def get_detail():
+    detail = exPress_serializer(collection_express.find())
+    return {"status":"ok", "data":detail}
