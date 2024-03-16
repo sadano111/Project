@@ -81,6 +81,19 @@ async def push(to: str, messages: list[dict]):
         )
         print(f"status = {response.status_code}")
 
+class FollowEvent(BaseModel):
+    type: str
+    source: dict
+
+
+@line.post("/callback")
+async def callback(event: FollowEvent):
+    if event.type == 'follow':
+        # Extract user ID from the event
+        user_id = event.source['userId']
+        # Process the user ID (store it in the database, send a welcome message, etc.)
+        # Your code here
+    return {'message': 'OK'}
 
 
 # แบบเก่าที่ทำครั้งแรก
