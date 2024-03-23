@@ -25,7 +25,7 @@ from linebot.v3.webhooks import (
 
 from bson import ObjectId
 
-from models.models import User, express
+from models.models import User, express,lineUser
 from schemas.schemas import user_serializer, users_serializer, exPress_serializer, express_serializer
 
 # get channel_secret and channel_access_token from your environment variable
@@ -149,6 +149,6 @@ async def get_detail():
     return {"status":"ok", "data":detail}
 
 @line.post("/post", tags=["user"])
-async def post_users(user: User):
+async def post_users(user: lineUser):
     collection_line.insert_one(dict(user))
     return {"status": "OK"}
