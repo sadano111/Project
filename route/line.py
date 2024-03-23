@@ -147,3 +147,8 @@ async def post_express(data:express):
 async def get_detail():
     detail = exPress_serializer(collection_express.find())
     return {"status":"ok", "data":detail}
+
+@line.post("/post", tags=["user"])
+async def post_users(user: User):
+    collection_line.insert_one(dict(user))
+    return {"status": "OK"}
