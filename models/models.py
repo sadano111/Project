@@ -7,6 +7,11 @@ class User(BaseModel):
 
 class parcel(BaseModel):
     to: str
+
+
+class lineUser(BaseModel):
+    userId: str
+    displayName: str
     
 
 class express(BaseModel):
