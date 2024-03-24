@@ -8,7 +8,9 @@ from config.db import collection_line, collection_image
 
 
 app = FastAPI()
-
+@app.get("/test")
+async def page():
+    return {"message" : "Hello World"}
 # app.include_router(route) ไม่ได้ใช้แล้ว
 app.include_router(ocr_router)
 app.include_router(line)
