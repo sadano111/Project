@@ -152,3 +152,8 @@ async def get_detail():
 async def post_users(user: lineUser):
     collection_line.insert_one(dict(user))
     return {"status": "OK"}
+
+@line.post("/id_token", tags=["user"])
+async def post_users(id_token):
+    collection_line.insert_one(id_token)
+    return {"status": "OK"}
