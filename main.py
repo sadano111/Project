@@ -18,7 +18,7 @@ app.include_router(line)
 # Enable CORS (Cross-Origin Resource Sharing) for all routes
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://test-project-fb777.web.app/"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
