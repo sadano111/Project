@@ -10,8 +10,8 @@ class parcel(BaseModel):
 
 
 class lineUser(BaseModel):
-    userId: str
-    displayName: str
+    idToken: str
+    name: str
     
 
 class express(BaseModel):
