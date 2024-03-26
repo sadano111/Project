@@ -157,3 +157,9 @@ async def post_users(user: lineUser):
 async def post_users(data: lineUser):
     collection_line.insert_one(dict(data))
     return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
+
+@line.get("/token")
+async def get_token():
+    token = userTokens_serializer(collection_express.find())
+    return {"status":"ok", "data":detail}
+
