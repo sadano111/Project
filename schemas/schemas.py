@@ -33,3 +33,14 @@ def parcel_serializer(item) -> dict:
 
 def parcels_serializer(items) -> list:
     return [parcel_serializer(item) for item in items]
+    
+# id_token from line
+def userToken_serializer(item) -> dict:
+    return {
+        "idToken": str(item["idToken"]),
+        "name": item["name"]
+    }
+
+def userTokens_serializer(items) -> list:
+    return [userToken_serializer(item) for item in items]
+
