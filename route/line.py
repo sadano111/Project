@@ -42,15 +42,6 @@ line_bot_api = AsyncMessagingApi(async_api_client)
 parser = WebhookParser(channel_secret)
 
 
-class LinePush(BaseModel):
-    to: str
-    messages: list[dict]
-
-# @line.post("/push")
-# async def push_message(payload: LinePush):
-#     await push(payload.to, payload.messages)
-#     return JSONResponse(content={"message": "OK"}, status_code=200)
-
 @line.post("/push")
 async def push_message():
     for data in collection_image.find():
@@ -62,10 +53,10 @@ async def push_message():
             line_id = collection_line.find_one({"name": name})
 
             if line_id:
-                id = line_id["line"]
+                id = line_id["idToken"]
+                print(id)
                 await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
                 collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
-
     return JSONResponse(content={"message": "OK"}, status_code=200)
 
 async def push(to: str, messages: list[dict]):
@@ -80,9 +71,10 @@ async def push(to: str, messages: list[dict]):
             "https://api.line.me/v2/bot/message/push", headers=headers, json=body
         )
         print(f"status = {response.status_code}")
+        
 
-@line.post("/verify_token")
-async def verify(id_token:str, name: str):
+# แปลง token ที่ได้เพื่อดูข้อมูล
+async def verify(id_token:str):
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
@@ -95,9 +87,24 @@ async def verify(id_token:str, name: str):
             "https://api.line.me/oauth2/v2.1/verify", headers=headers, params=urlencode(params)
         )
         json_response = response.json()
-        sub = json_response.get('sub')
-        total = collection_line.insert_one(sub, name)
-        return total
+        return json_response
+
+# บันทึกเฉพาะ userID 
+@line.post("/id_token", tags=["line_user"])
+async def post_users(data: lineUser):
+    json_response = await verify(data.idToken)
+    sub = json_response.get('sub')
+    document = {"idToken": sub, "name": data.name}
+    collection_line.insert_one(document)
+    return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
+
+# ดูข้อมูลว่ามี user อะไรบ้าง
+@line.get("/token", tags=["line_user"])
+async def get_token():
+    token = userTokens_serializer(collection_line.find())
+    return {"status":"ok", "data":token}
+
+
 
 class FollowEvent(BaseModel):
     type: str
@@ -113,43 +120,6 @@ async def callback(event: FollowEvent):
         # Your code here
     return {'message': 'OK'}
 
-
-# แบบเก่าที่ทำครั้งแรก
-# @line.post("/callback")
-# async def handle_callback(request: Request):
-#     signature = request.headers['X-Line-Signature']
-
-#     # get request body as text
-#     body = await request.body()
-#     body = body.decode()
-
-#     try:
-#         events = parser.parse(body, signature)
-#     except InvalidSignatureError:
-#         raise HTTPException(status_code=400, detail="Invalid signature")
-
-
-#     for data in collection_image.find():
-#         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-#         if data["status"] == False:
-
-
-
-# # ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
-#     for event in events:
-#         if not isinstance(event, MessageEvent):
-#             continue
-#         if not isinstance(event.message, TextMessageContent):
-#             continue
-
-#         await line_bot_api.reply_message(
-#             ReplyMessageRequest(
-#                 reply_token=event.reply_token,
-#                 messages=[TextMessage(text=event.message.text)]
-#             )
-#         )
-
-#     return 'OK'
 
 @line.get("/get_all_data")
 async def get_all_data():
@@ -171,13 +141,5 @@ async def post_users(user: lineUser):
     collection_line.insert_one(dict(user))
     return {"status": "OK"}
 
-@line.post("/id_token", tags=["user"])
-async def post_users(data: lineUser):
-    collection_line.insert_one(dict(data))
-    return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
 
-@line.get("/token")
-async def get_token():
-    token = userTokens_serializer(collection_line.find())
-    return {"status":"ok", "data":token}
 
