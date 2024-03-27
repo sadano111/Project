@@ -160,6 +160,6 @@ async def post_users(data: lineUser):
 
 @line.get("/token")
 async def get_token():
-    token = userTokens_serializer(collection_express.find())
+    token = userTokens_serializer(collection_line.find())
     return {"status":"ok", "data":token}
 
