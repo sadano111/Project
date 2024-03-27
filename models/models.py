@@ -8,15 +8,13 @@ class User(BaseModel):
 class parcel(BaseModel):
     to: str
 
-
-class lineUser(BaseModel):
-    idToken: str
-    name: str
-    
-
 class express(BaseModel):
     name: str
     phone: int
     role: str
     express: str
     parcel: int
+
+class lineUser(BaseModel):
+    idToken: str
+    name: str
