@@ -81,6 +81,24 @@ async def push(to: str, messages: list[dict]):
         )
         print(f"status = {response.status_code}")
 
+@line.post("/verify_token")
+async def verify(id_token:str, name: str):
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+    params = {
+        'id_token': id_token,
+        'client_id': '2004090496'
+    }
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            "https://api.line.me/oauth2/v2.1/verify", headers=headers, params=urlencode(params)
+        )
+        json_response = response.json()
+        sub = json_response.get('sub')
+        total = collection_line.insert_one(sub, name)
+        return total
+
 class FollowEvent(BaseModel):
     type: str
     source: dict
