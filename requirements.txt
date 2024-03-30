@@ -11,3 +11,4 @@ Pillow
 line-bot-sdk
 
 httpx
+passlib
