@@ -138,7 +138,7 @@ async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
             # ocr_results.append({"filename": file.filename, "result": ocr_result})
             ocr_results.append({"result": ocr_result})
             # print(ocr_results)
-            # collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
+            collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
 
         return JSONResponse(content={"results": ocr_results}, status_code=200)
     except Exception as e:
