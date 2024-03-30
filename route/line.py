@@ -26,8 +26,8 @@ from linebot.v3.webhooks import (
 from bson import ObjectId
 from urllib.parse import urlencode
 
-from models.models import User, express,lineUser
-from schemas.schemas import user_serializer, users_serializer, exPress_serializer, express_serializer,userTokens_serializer
+from models.models import User, express
+from schemas.schemas import user_serializer, users_serializer, exPress_serializer, express_serializer
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
@@ -46,7 +46,7 @@ parser = WebhookParser(channel_secret)
 class LinePush(BaseModel):
     to: str
     messages: list[dict]
-    
+
 # @line.post("/push")
 # async def push_message(payload: LinePush):
 #     await push(payload.to, payload.messages)
@@ -63,7 +63,7 @@ async def push_message():
             line_id = collection_line.find_one({"name": name})
 
             if line_id:
-                id = line_id["idToken"]
+                id = line_id["line"]
                 await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
                 collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
     return JSONResponse(content={"message": "OK"}, status_code=200)
@@ -80,101 +80,42 @@ async def push(to: str, messages: list[dict]):
             "https://api.line.me/v2/bot/message/push", headers=headers, json=body
         )
         print(f"status = {response.status_code}")
+        
 
-
-async def verify(id_token:str):
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    params = {
-        'id_token': id_token,
-        'client_id': '2004090496'
-    }
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            "https://api.line.me/oauth2/v2.1/verify", headers=headers, params=urlencode(params)
-        )
-        json_response = response.json()
-        return json_response
-    
-@line.post("/id_token", tags=["line_user"])
-async def post_users(data: lineUser):
-    json_response = await verify(data.idToken)
-    sub = json_response.get('sub')
-    document = {"idToken": sub, "name": data.name}
-    collection_line.insert_one(document)
-    return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
-    
-
-
-@line.get("/get_all_data")
-async def get_all_data():
-    users = users_serializer(collection_image.find())
-    return {"status":"ok", "data":users}
-
-@line.post("/express")
-async def post_express(data:express):
-    collection_express.insert_one(dict(data))
-    return {"status":"ok", "data":exPress_serializer(collection_express.find())}
-
-@line.get("/getdetail")
-async def get_detail():
-    detail = exPress_serializer(collection_express.find())
-    return {"status":"ok", "data":detail}
-
-
-@line.get("/token")
-async def get_token():
-    token = userTokens_serializer(collection_line.find())
-    return {"status":"ok", "data":token}
-
-
-class FollowEvent(BaseModel):
-    type: str
-    source: dict
-
-@line.post("/callback")
-async def callback(event: FollowEvent):
-    if event.type == 'follow':
-        # Extract user ID from the event
-        user_id = event.source['userId']
-        # Process the user ID (store it in the database, send a welcome message, etc.)
-        # Your code here
-    return {'message': 'OK'}
 
 # แบบเก่าที่ทำครั้งแรก
-# @line.post("/callback")
-# async def handle_callback(request: Request):
-#     signature = request.headers['X-Line-Signature']
+@line.post("/callback")
+async def handle_callback(request: Request):
+    signature = request.headers['X-Line-Signature']
 
-#     # get request body as text
-#     body = await request.body()
-#     body = body.decode()
+    # get request body as text
+    body = await request.body()
+    body = body.decode()
 
-#     try:
-#         events = parser.parse(body, signature)
-#     except InvalidSignatureError:
-#         raise HTTPException(status_code=400, detail="Invalid signature")
-
-
-#     for data in collection_image.find():
-#         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-#         if data["status"] == False:
+    try:
+        events = parser.parse(body, signature)
+    except InvalidSignatureError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
 
+    for data in collection_image.find():
+        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+        if data["status"] == False:
 
-# # ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
-#     for event in events:
-#         if not isinstance(event, MessageEvent):
-#             continue
-#         if not isinstance(event.message, TextMessageContent):
-#             continue
 
-#         await line_bot_api.reply_message(
-#             ReplyMessageRequest(
-#                 reply_token=event.reply_token,
-#                 messages=[TextMessage(text=event.message.text)]
-#             )
-#         )
 
-#     return 'OK'
+# ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
+    for event in events:
+        if not isinstance(event, MessageEvent):
+            continue
+        if not isinstance(event.message, TextMessageContent):
+            continue
+
+        await line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=event.message.text)]
+            )
+        )
+
+    return 'OK'
