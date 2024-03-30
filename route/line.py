@@ -100,11 +100,16 @@ async def verify(id_token:str, name: str):
         total = collection_line.insert_one(sub, name)
         return total
     
-@line.post("/id_token", tags=["token"])
+# บันทึกเฉพาะ userID 
+@line.post("/id_token", tags=["line_user"])
 async def post_users(data: lineUser):
-    collection_line.insert_one(dict(data))
+    json_response = await verify(data.idToken)
+    sub = json_response.get('sub')
+    document = {"idToken": sub, "name": data.name}
+    collection_line.insert_one(document)
     return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
 
+# ดูข้อมูลว่ามี user อะไรบ้าง
 @line.get("/token", tags=["token"])
 async def get_token():
     token = userTokens_serializer(collection_line.find())
