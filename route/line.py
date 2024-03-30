@@ -84,38 +84,38 @@ async def push(to: str, messages: list[dict]):
 
 
 # แบบเก่าที่ทำครั้งแรก
-@line.post("/callback")
-async def handle_callback(request: Request):
-    signature = request.headers['X-Line-Signature']
+# @line.post("/callback")
+# async def handle_callback(request: Request):
+#     signature = request.headers['X-Line-Signature']
 
-    # get request body as text
-    body = await request.body()
-    body = body.decode()
+#     # get request body as text
+#     body = await request.body()
+#     body = body.decode()
 
-    try:
-        events = parser.parse(body, signature)
-    except InvalidSignatureError:
-        raise HTTPException(status_code=400, detail="Invalid signature")
+#     try:
+#         events = parser.parse(body, signature)
+#     except InvalidSignatureError:
+#         raise HTTPException(status_code=400, detail="Invalid signature")
 
 
-    for data in collection_image.find():
-        # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
-        if data["status"] == False:
+#     for data in collection_image.find():
+#         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
+#         if data["status"] == False:
 
 
 
 # ตรงนี้เป็นการวนลูป event ในการตอบกลับผู้ใช้
-    for event in events:
-        if not isinstance(event, MessageEvent):
-            continue
-        if not isinstance(event.message, TextMessageContent):
-            continue
+    # for event in events:
+    #     if not isinstance(event, MessageEvent):
+    #         continue
+    #     if not isinstance(event.message, TextMessageContent):
+    #         continue
 
-        await line_bot_api.reply_message(
-            ReplyMessageRequest(
-                reply_token=event.reply_token,
-                messages=[TextMessage(text=event.message.text)]
-            )
-        )
+    #     await line_bot_api.reply_message(
+    #         ReplyMessageRequest(
+    #             reply_token=event.reply_token,
+    #             messages=[TextMessage(text=event.message.text)]
+    #         )
+    #     )
 
-    return 'OK'
+    # return 'OK'
