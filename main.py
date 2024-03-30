@@ -5,7 +5,6 @@ from route.line import line
 from route.login import login
 from fastapi.middleware.cors import CORSMiddleware
 from config.db import collection_line, collection_image
-from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
