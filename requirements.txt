@@ -12,3 +12,4 @@ line-bot-sdk
 
 httpx
 passlib
+jwt
