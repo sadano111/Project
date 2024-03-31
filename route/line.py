@@ -83,7 +83,7 @@ async def push(to: str, messages: list[dict]):
         print(f"status = {response.status_code}")
 
 @line.post("/verify_token")
-async def verify(id_token:str, name: str):
+async def verify(id_token:str):
     headers = {
         "Content-Type": "application/x-www-form-urlencoded",
     }
@@ -96,9 +96,7 @@ async def verify(id_token:str, name: str):
             "https://api.line.me/oauth2/v2.1/verify", headers=headers, params=urlencode(params)
         )
         json_response = response.json()
-        sub = json_response.get('sub')
-        total = collection_line.insert_one(sub, name)
-        return total
+        return json_response
     
 # บันทึกเฉพาะ userID 
 @line.post("/id_token", tags=["line_user"])
