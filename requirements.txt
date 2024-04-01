@@ -13,5 +13,5 @@ line-bot-sdk
 httpx
 passlib
 jwt
-
+PyJWT
 bcrypt
