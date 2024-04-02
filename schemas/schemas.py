@@ -51,7 +51,8 @@ def loginUser_serializer(item) -> dict:
         "username": item["username"],
         "password": item["password"],
         "firstname": item["firstname"],
-        "lastname": item["lastname"]
+        "lastname": item["lastname"],
+        "roles": item["roles"]
     }
 
 def loginUsers_serializer(items) -> list:

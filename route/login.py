@@ -21,17 +21,18 @@ async def addUser(data: userAccount):
         raise HTTPException(status_code=409, detail="Username already exists")
     else:
         hashed_password = pwd_context.hash(data.password)
-        document = {"username":data.username, "password": hashed_password, "firstname": data.firstname,"lastname": data.lastname}
+        document = {"username":data.username, "password": hashed_password, "firstname": data.firstname,"lastname": data.lastname, "roles":False}
         collection_userLogin.insert_one(document)
         return  {"status": "200 OK", "new_user": data.username}
 
 
-def sign_token(username: str, firstname: str, lastname: str) -> str:
+def sign_token(username: str, firstname: str, lastname: str, roles: bool) -> str:
     payload = {
         "UserInfo": {
             "username": username,
             "firstname": firstname,
-            "lastname": lastname
+            "lastname": lastname,
+            "roles": roles
         },
         "exp": "1D"
     }
@@ -50,8 +51,9 @@ async def handleLogin(data: UserLogin, response: Response):
         raise HTTPException(status_code=404, detail=f"User not found with username {data.username}")
     else:
         same = pwd_context.verify(data.password, checkUsername.get("password"))
+        print(data)
         if (same):
-            access_token = sign_token(data.username, checkUsername.get("firstname"), checkUsername.get("lastname"))
+            access_token = sign_token(data.username, checkUsername.get("firstname"), checkUsername.get("lastname"), checkUsername.get("roles"))
             response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="None", max_age=3600)
             return {"access_token": access_token}
         else:

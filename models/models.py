@@ -25,3 +25,4 @@ class userAccount(BaseModel):
     password: str
     firstname: str
     lastname: str
+    roles: bool
