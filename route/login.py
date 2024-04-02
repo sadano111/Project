@@ -21,12 +21,12 @@ async def addUser(data: userAccount):
         raise HTTPException(status_code=409, detail="Username already exists")
     else:
         hashed_password = pwd_context.hash(data.password)
-        document = {"username":data.username, "password": hashed_password, "firstname": data.firstname,"lastname": data.lastname, "roles":False}
+        document = {"username":data.username, "password": hashed_password, "firstname": data.firstname,"lastname": data.lastname, "roles":data.roles}
         collection_userLogin.insert_one(document)
         return  {"status": "200 OK", "new_user": data.username}
 
 
-def sign_token(username: str, firstname: str, lastname: str, roles: bool) -> str:
+def sign_token(username: str, firstname: str, lastname: str, roles: str) -> str:
     payload = {
         "UserInfo": {
             "username": username,
