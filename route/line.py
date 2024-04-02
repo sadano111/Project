@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException, APIRouter
-from config.db import collection_image, collection_line, collection_express
+from config.db import collection_image, collection_line, collection_express, collection_userLogin
 
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -27,7 +27,7 @@ from bson import ObjectId
 from urllib.parse import urlencode
 
 from models.models import User, express,lineUser
-from schemas.schemas import user_serializer, users_serializer, exPress_serializer, express_serializer, userToken_serializer, userTokens_serializer
+from schemas.schemas import user_serializer, users_serializer, exPress_serializer, loginUsers_serializer, userToken_serializer, userTokens_serializer
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
@@ -107,12 +107,17 @@ async def post_users(data: lineUser):
     collection_line.insert_one(document)
     return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
 
-# ดูข้อมูลว่ามี user อะไรบ้าง
+# ดูข้อมูลว่ามี user line ใครบ้าง
 @line.get("/token", tags=["token"])
 async def get_token():
     token = userTokens_serializer(collection_line.find())
     return {"status":"ok", "data":token}
 
+# ดูข้อมูลว่ามี user พนักงาน ใครบ้าง
+@line.get("/security", tags=["token"])
+async def get_security():
+    data = loginUsers_serializer(collection_userLogin.find())
+    return {"status":"ok", "data":data}
 
 class FollowEvent(BaseModel):
     type: str
