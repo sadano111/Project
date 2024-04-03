@@ -55,7 +55,7 @@ async def handleLogin(data: UserLogin, response: Response):
         if (same):
             access_token = sign_token(data.username, checkUsername.get("firstname"), checkUsername.get("lastname"), checkUsername.get("roles"))
             response.set_cookie(key="access_token", value=access_token, httponly=True, secure=True, samesite="None", max_age=3600)
-            return {"access_token": access_token}
+            return {"access_token": access_token, "username": data.username, "firstname":checkUsername.get("firstname"), "lastname":checkUsername.get("lastname"), "roles":checkUsername.get("roles")}
         else:
             raise HTTPException(status_code=401, detail="Incorrect password")
         
