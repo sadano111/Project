@@ -157,6 +157,12 @@ async def get_security():
     data = loginUsers_serializer(collection_userLogin.find())
     return {"status":"ok", "data":data}
 
+# ค้นหา uid ของคนนั้น
+@line.get("/finduid/{id}", tags=["token"])
+async def find_uid(id:str):
+    uid = collection_line.find_one({"idToken": id}, {'_id': False})
+    return {"status": "OK", "data":uid}
+
 class FollowEvent(BaseModel):
     type: str
     source: dict
