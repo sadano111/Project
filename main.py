@@ -19,6 +19,7 @@ app.add_middleware(
     allow_origins=["https://test-project-fb777.web.app",
                    "https://cs403.onrender.com/singup",
                    "https://cs403.onrender.com/singin",
+                   "https://front-cs-403.vercel.app",
                    "http://localhost:4200"],
     allow_credentials=True,
     allow_methods=["*"],
