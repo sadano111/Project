@@ -22,7 +22,7 @@ from linebot.v3.webhooks import (
     MessageEvent,
     TextMessageContent
 )
-
+import requests
 from bson import ObjectId
 from urllib.parse import urlencode
 
@@ -47,10 +47,48 @@ class LinePush(BaseModel):
     to: str
     messages: list[dict]
 
-# @line.post("/push")
-# async def push_message(payload: LinePush):
-#     await push(payload.to, payload.messages)
-#     return JSONResponse(content={"message": "OK"}, status_code=200)
+class LineMessage(BaseModel):
+    events: list
+
+@line.post("/webhook")
+async def webhook(line_message: LineMessage):
+    reply_token = line_message.events[0].replyToken
+    message = line_message.events[0].message.text
+    user_id = line_message.events[0].source.userId
+    if message == "ยืนยัน":
+        for data in collection_image.find():
+            if data["take"] == False:
+
+                # name = data["result"][0] + " " + data["result"][1]
+                name = data["result"][0]
+                line_id = collection_line.find_one({"name": name})
+
+                if line_id:
+                    id = line_id["idToken"]
+                    if id == user_id:
+                        await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
+                        collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+
+    reply(reply_token, message)
+    return {"message": "Webhook received successfully"}
+
+def reply(reply_token, message):
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU='  # Replace {xxxxxxx} with your actual Line Channel Access Token
+    }
+    body = {
+        "replyToken": reply_token,
+        "messages": [
+            {"type": "text", "text": message}
+        ]
+    }
+    response = requests.post(
+        "https://api.line.me/v2/bot/message/reply",
+        headers=headers,
+        json=body
+    )
+    print("status =", response.status_code)
 
 @line.post("/push")
 async def push_message():
