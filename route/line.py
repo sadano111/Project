@@ -158,7 +158,7 @@ async def get_security():
     return {"status":"ok", "data":data}
 
 # ค้นหา uid ของคนนั้น
-@line.get("/finduid/{id}", tags=["token"])
+@line.get("/finduid", tags=["token"])
 async def find_uid(id:str):
     uid = collection_line.find_one({"idToken": id}, {'_id': False})
     return {"status": "OK", "data":uid}
