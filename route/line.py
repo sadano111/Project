@@ -47,48 +47,32 @@ class LinePush(BaseModel):
     to: str
     messages: list[dict]
 
-class LineMessage(BaseModel):
-    events: list
+@line.post("/callback")
+async def handle_callback(request: Request):
+    signature = request.headers['X-Line-Signature']
 
-@line.post("/webhook")
-async def webhook(line_message: LineMessage):
-    reply_token = line_message.events[0].replyToken
-    message = line_message.events[0].message.text
-    user_id = line_message.events[0].source.userId
-    if message == "ยืนยัน":
-        for data in collection_image.find():
-            if data["take"] == False:
+    # get request body as text
+    body = await request.body()
+    body = body.decode()
 
-                # name = data["result"][0] + " " + data["result"][1]
-                name = data["result"][0]
-                line_id = collection_line.find_one({"name": name})
+    try:
+        events = parser.parse(body, signature)
+    except InvalidSignatureError:
+        raise HTTPException(status_code=400, detail="Invalid signature")
 
-                if line_id:
-                    id = line_id["idToken"]
-                    if id == user_id:
-                        await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
-                        collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+    for event in events:
+        if not isinstance(event, MessageEvent):
+            continue
+        if not isinstance(event.message, TextMessageContent):
+            continue
 
-    reply(reply_token, message)
-    return {"message": "Webhook received successfully"}
-
-def reply(reply_token, message):
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU='  # Replace {xxxxxxx} with your actual Line Channel Access Token
-    }
-    body = {
-        "replyToken": reply_token,
-        "messages": [
-            {"type": "text", "text": message}
-        ]
-    }
-    response = requests.post(
-        "https://api.line.me/v2/bot/message/reply",
-        headers=headers,
-        json=body
-    )
-    print("status =", response.status_code)
+        await line_bot_api.reply_message(
+            ReplyMessageRequest(
+                reply_token=event.reply_token,
+                messages=[TextMessage(text=event.message.text)]
+            )
+        )
+    return 'OK'
 
 @line.post("/push")
 async def push_message():
