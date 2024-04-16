@@ -149,17 +149,14 @@ async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
     
 @ocr_router.post("/addocr")
 async def add_ocr(data: ocr):
-    # Convert date to the desired format
-    # formatted_date = datetime.strptime(data.date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d/%m/%Y")
-    
-    # Create a new dict with the modified date and set status and take to false
     modified_data = {
         "number": data.number,
         "phone": data.phone,
         "name": data.name,
-        "date": data.date,
+        "date": datetime.now(),
         "status": False,
         "take": False
     }
     collection_image.insert_one(dict(modified_data))
+    # date จะเข้าไปอยู่ใน mongoDB แล้ว แต่ตอน return ออกมาจะไม่มีเพราะไม่ได้ใส่ใน model เพราะไม่จำเป็นให้ front ส่งมา
     return {"status":"ok", "data":ocrs_serializer(collection_image.find())}
