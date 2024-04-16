@@ -1,9 +1,12 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 class User(BaseModel):
-    filename: int
-    result: str
-    status: int
+    number: int
+    phone: str
+    name: str
+    date: datetime
+    take: bool
 
 class parcel(BaseModel):
     to: str
