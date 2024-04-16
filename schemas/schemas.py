@@ -64,7 +64,6 @@ def ocr_serializer(item) -> dict:
         "number": item["number"],
         "phone": item["phone"],
         "name": item["name"],
-        "date": item["date"],
         "status": item["status"],
         "take": item["take"]
     }
