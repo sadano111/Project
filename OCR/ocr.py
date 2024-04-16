@@ -88,16 +88,18 @@
 # **********************************************************************************
 
 
+# import base64
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse
 from config.db import collection_image, collection_line
-from models.models import parcel
-from schemas.schemas import parcel_serializer, parcels_serializer
+from models.models import parcel, ocr
+from schemas.schemas import parcel_serializer, parcels_serializer, ocrs_serializer
 from typing import List
 import cv2
 import easyocr
 import numpy as np
 import re
+from datetime import datetime
 
 ocr_router = APIRouter()
 
@@ -128,6 +130,7 @@ def process_ocr(image_content):
 
     return ocr_results
 
+
 @ocr_router.post("/perform-ocr-multiple")
 async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
     try:
@@ -138,8 +141,25 @@ async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
             # ocr_results.append({"filename": file.filename, "result": ocr_result})
             ocr_results.append({"result": ocr_result})
             # print(ocr_results)
-            collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
+            # collection_image.insert_one({"filename": file.filename, "result": ocr_result, "status":False})
 
         return JSONResponse(content={"results": ocr_results}, status_code=200)
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
+    
+@ocr_router.post("/addocr")
+async def add_ocr(data: ocr):
+    # Convert date to the desired format
+    formatted_date = datetime.strptime(data.date, "%Y-%m-%dT%H:%M:%S.%fZ").strftime("%d/%m/%Y")
+    
+    # Create a new dict with the modified date and set status and take to false
+    modified_data = {
+        "number": data.number,
+        "phone": data.phone,
+        "name": data.name,
+        "date": formatted_date,
+        "status": False,
+        "take": False
+    }
+    collection_image.insert_one(dict(modified_data))
+    return {"status":"ok", "data":ocrs_serializer(collection_image.find())}
