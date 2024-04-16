@@ -6,6 +6,7 @@ def user_serializer(user) -> dict:
         "phone": user["phone"],
         "name": user["name"],
         "date": user["date"],
+        "company": user["company"],
         "take": user["take"]
     }
 
@@ -66,6 +67,7 @@ def ocr_serializer(item) -> dict:
         "number": item["number"],
         "phone": item["phone"],
         "name": item["name"],
+        "company": item["company"],
         "status": item["status"],
         "take": item["take"]
     }
