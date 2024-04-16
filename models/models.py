@@ -6,6 +6,7 @@ class User(BaseModel):
     phone: str
     name: str
     date: datetime
+    company: str
     take: bool
 
 class parcel(BaseModel):
@@ -34,5 +35,6 @@ class ocr(BaseModel):
     number: str
     phone: str
     name: str
+    company: str
     status: bool
     take: bool
