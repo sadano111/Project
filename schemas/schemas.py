@@ -57,3 +57,17 @@ def loginUser_serializer(item) -> dict:
 
 def loginUsers_serializer(items) -> list:
     return [loginUser_serializer(item) for item in items]
+
+def ocr_serializer(item) -> dict:
+    return {
+        "id": str(item["_id"]),
+        "number": item["number"],
+        "phone": item["phone"],
+        "name": item["name"],
+        "date": item["date"],
+        "status": item["status"],
+        "take": item["take"]
+    }
+
+def ocrs_serializer(items) -> list:
+    return [ocr_serializer(item) for item in items]
