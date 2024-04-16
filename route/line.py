@@ -29,7 +29,6 @@ from urllib.parse import urlencode
 from models.models import User, express,lineUser
 from schemas.schemas import user_serializer, users_serializer, exPress_serializer, loginUsers_serializer, userToken_serializer, userTokens_serializer
 
-# get channel_secret and channel_access_token from your environment variable
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
 channel_access_token = 'VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU='
 
@@ -41,7 +40,6 @@ line = APIRouter()
 async_api_client = AsyncApiClient(configuration)
 line_bot_api = AsyncMessagingApi(async_api_client)
 parser = WebhookParser(channel_secret)
-
 
 class LinePush(BaseModel):
     to: str
@@ -81,13 +79,15 @@ async def push_message():
         if data["status"] == False:
 
             # name = data["result"][0] + " " + data["result"][1]
-            name = data["result"][0]
+            name = data["name"]
             line_id = collection_line.find_one({"name": name})
-
+            
+            detail = collection_image.find({"name":name})
             if line_id:
-                id = line_id["idToken"]
-                await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
-                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+                if data["status"] == False and data["name"] == line_id:
+                    id = line_id["idToken"]
+                    await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
+                    collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
 
     return JSONResponse(content={"message": "OK"}, status_code=200)
 
@@ -125,6 +125,7 @@ async def verify(id_token:str):
 async def post_users(data: lineUser):
     json_response = await verify(data.idToken)
     sub = json_response.get('sub')
+    print(sub)
     document = {"idToken": sub, "name": data.name}
     collection_line.insert_one(document)
     return {"status": "OK", "data":userTokens_serializer(collection_line.find())}
@@ -134,6 +135,12 @@ async def post_users(data: lineUser):
 async def get_token():
     token = userTokens_serializer(collection_line.find())
     return {"status":"ok", "data":token}
+
+# ค้นหา uid ของคนนั้น
+@line.get("/finduid/{idToken}", tags=["token"])
+async def find_uid(idToken:str):
+    uid = collection_line.find_one({"idToken": idToken}, {'_id': False})
+    return {"status": "OK", "data":uid}
 
 # ดูข้อมูลว่ามี user พนักงาน ใครบ้าง
 @line.get("/security", tags=["token"])
