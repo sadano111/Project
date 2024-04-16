@@ -2,9 +2,11 @@
 def user_serializer(user) -> dict:
     return {
         "id": str(user["_id"]),
-        "filename": user["filename"],
-        "result": user["result"],
-        "status": user["status"]
+        "number": user["number"],
+        "phone": user["phone"],
+        "name": user["name"],
+        "date": user["date"],
+        "take": user["take"]
     }
 
 def users_serializer(users) -> list:
