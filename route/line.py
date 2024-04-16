@@ -75,21 +75,45 @@ async def handle_callback(request: Request):
 @line.post("/push")
 async def push_message():
     for data in collection_image.find():
+        data_list = []
+        line_message = ""
         # เช็ค status ว่า line มีการแจ้งเตือนหรือยัง
         if data["status"] == False:
-
             # name = data["result"][0] + " " + data["result"][1]
             name = data["name"]
             line_id = collection_line.find_one({"name": name})
             
-            detail = collection_image.find({"name":name})
+            detail = collection_image.find_one({"name":name})
+            selected_detail = {key: value for key, value in detail.items() if key != "_id"}
+            data_list.append(selected_detail)  # เพิ่ม selected_detail เข้าไปในรายการ
+
             if line_id:
-                if data["status"] == False and data["name"] == line_id:
-                    id = line_id["idToken"]
-                    await push(id, messages=[{"type":"text","text":"มีพัสดุมาส่ง"}])
-                    collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+                line_message = "มีพัสดุมาส่งครับ\n"
+                for key, value in selected_detail.items():
+                    line_message += f"{key}: {value}\n"
+                id = line_id["idToken"]
+                await push(id, messages=[{"type":"text","text": line_message.strip()}])
+                collection_image.update_one({"_id": ObjectId(data["_id"])}, {"$set": {"status": True}})
+                data_list = []
+                line_message = ""
 
     return JSONResponse(content={"message": "OK"}, status_code=200)
+
+
+# @line.post("/test")
+# async def test():
+#     data_list = []  # สร้างรายการเพื่อเก็บข้อมูลทั้งหมด
+#     for data in collection_image.find():
+#         if data["status"] == False:
+#             name = data["name"]
+#             detail = collection_image.find_one({"name": name})
+#             # เลือกเฉพาะค่าที่ต้องการจาก detail โดยไม่รวม ObjectId
+#             selected_detail = {key: value for key, value in detail.items() if key != "_id"}
+#             data_list.append(selected_detail)  # เพิ่ม selected_detail เข้าไปในรายการ
+
+#     return JSONResponse(content={"data": detail}, status_code=200)  # ส่งค่าของ data_list ที่เก็บ selected_detail ทั้งหมดออกไป
+
+
 
 async def push(to: str, messages: list[dict]):
     headers = {
