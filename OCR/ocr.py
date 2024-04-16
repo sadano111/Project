@@ -99,7 +99,8 @@ import cv2
 import easyocr
 import numpy as np
 import re
-from datetime import datetime
+from datetime import datetime, timezone
+import pytz
 
 ocr_router = APIRouter()
 
@@ -149,11 +150,15 @@ async def perform_ocr_multiple(files: List[UploadFile] = File(...)):
     
 @ocr_router.post("/addocr")
 async def add_ocr(data: ocr):
+    tz_thailand = pytz.timezone('Asia/Bangkok')  # ระบุโซนเวลาของไทย
+    utc_now = datetime.now(pytz.utc)  # ดึงเวลาปัจจุบันในโซนเวลา UTC
+    thai_now = utc_now.astimezone(tz_thailand)  # แปลงเวลา UTC เป็นเวลาในโซนเวลาของไทย
     modified_data = {
         "number": data.number,
         "phone": data.phone,
         "name": data.name,
-        "date": datetime.now(),
+        # datetime.now(timezone.utc)
+        "date": thai_now.strftime('%Y-%m-%dT%H:%M:%S.%f%z'),
         "status": False,
         "take": False
     }
