@@ -1,5 +1,4 @@
 from pydantic import BaseModel
-from datetime import datetime
 
 class User(BaseModel):
     filename: int
@@ -32,6 +31,5 @@ class ocr(BaseModel):
     number: str
     phone: str
     name: str
-    date: datetime
     status: bool
     take: bool
