@@ -158,7 +158,7 @@ async def add_ocr(data: ocr):
         "phone": data.phone,
         "name": data.name,
         # datetime.now(timezone.utc)
-        "date": thai_now.strftime('%Y-%m-%dT%H:%M:%S.%f%z'),
+        "date": thai_now.strftime('%d-%m-%Y'),
         "company": data.company,
         "status": False,
         "take": False
