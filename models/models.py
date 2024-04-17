@@ -19,8 +19,7 @@ class lineUser(BaseModel):
     
 class express(BaseModel):
     name: str
-    phone: int
-    role: str
+    phone: str
     express: str
     parcel: int
 
