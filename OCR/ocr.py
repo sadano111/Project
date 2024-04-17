@@ -159,6 +159,7 @@ async def add_ocr(data: ocr):
         "name": data.name,
         # datetime.now(timezone.utc)
         "date": thai_now.strftime('%Y-%m-%dT%H:%M:%S.%f%z'),
+        "company": data.company,
         "status": False,
         "take": False
     }
