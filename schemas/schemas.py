@@ -19,7 +19,6 @@ def express_serializer(item) -> dict:
         "id": str(item["_id"]),
         "name": item["name"],
         "phone": item["phone"],
-        "role": item["role"],
         "express": item["express"],
         "parcel": item["parcel"]
     }
