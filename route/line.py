@@ -202,4 +202,3 @@ async def get_detail():
 async def post_users(user: lineUser):
     collection_line.insert_one(dict(user))
     return {"status": "OK"}
-
