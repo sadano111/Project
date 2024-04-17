@@ -26,8 +26,11 @@ import requests
 from bson import ObjectId
 from urllib.parse import urlencode
 
-from models.models import User, express,lineUser
-from schemas.schemas import user_serializer, users_serializer, exPress_serializer, loginUsers_serializer, userToken_serializer, userTokens_serializer
+from models.models import express,lineUser
+from schemas.schemas import users_serializer, exPress_serializer, loginUsers_serializer, userTokens_serializer, tableExpresss_serializer
+
+from datetime import datetime, timezone
+import pytz
 
 channel_secret = 'e3222b78675e0db46886176fadc83f61'
 channel_access_token = 'VWOeAmz+Ps1FzV9GuXV42Tcp7Qa8yQ301/ZGeHGP+TFUC0dWnGWDs0fGQOQfESP6IGHqag+7P3yqOZUfc6+Cq6emmdmvd95naWvtg8rcIZ1lPjdTgdVFn1SPGDqYPJimxN58hfeEyojamcK0nE3adwdB04t89/1O/w1cDnyilFU='
@@ -190,12 +193,22 @@ async def get_all_data():
 
 @line.post("/express")
 async def post_express(data:express):
-    collection_express.insert_one(dict(data))
+    tz_thailand = pytz.timezone('Asia/Bangkok')  # ระบุโซนเวลาของไทย
+    utc_now = datetime.now(pytz.utc)  # ดึงเวลาปัจจุบันในโซนเวลา UTC
+    thai_now = utc_now.astimezone(tz_thailand)  # แปลงเวลา UTC เป็นเวลาในโซนเวลาของไทย
+    modified_data = {
+        "date": thai_now.strftime('%d-%m-%Y'),
+        "name": data.name,
+        "phone": data.phone,
+        "express": data.express,
+        "parcel": data.parcel
+    }
+    collection_express.insert_one(dict(modified_data))
     return {"status":"ok", "data":exPress_serializer(collection_express.find())}
 
 @line.get("/getdetail")
 async def get_detail():
-    detail = exPress_serializer(collection_express.find())
+    detail = tableExpresss_serializer(collection_express.find())
     return {"status":"ok", "data":detail}
 
 @line.post("/post", tags=["user"])
