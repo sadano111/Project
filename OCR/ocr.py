@@ -91,9 +91,11 @@
 # import base64
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse
-from config.db import collection_image, collection_line
-from models.models import parcel, ocr
-from schemas.schemas import parcel_serializer, parcels_serializer, ocrs_serializer
+from config.db import collection_image
+from models.models import ocr
+from schemas.schemas import ocrs_serializer
+from route.line import push_message
+
 from typing import List
 import cv2
 import easyocr
@@ -101,6 +103,7 @@ import numpy as np
 import re
 from datetime import datetime, timezone
 import pytz
+
 
 ocr_router = APIRouter()
 
@@ -164,5 +167,6 @@ async def add_ocr(data: ocr):
         "take": False
     }
     collection_image.insert_one(dict(modified_data))
+    await push_message()
     # date จะเข้าไปอยู่ใน mongoDB แล้ว แต่ตอน return ออกมาจะไม่มีเพราะไม่ได้ใส่ใน model เพราะไม่จำเป็นให้ front ส่งมา
     return {"status":"ok", "data":ocrs_serializer(collection_image.find())}
