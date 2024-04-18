@@ -68,6 +68,7 @@ async def handle_callback(request: Request):
             continue
 
         if event.message.text == "ยืนยัน":
+            print(event.source.user)
             await line_bot_api.reply_message(
                 ReplyMessageRequest(
                     reply_token=event.reply_token,
