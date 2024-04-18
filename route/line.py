@@ -75,7 +75,7 @@ async def handle_callback(request: Request):
         )
     return 'OK'
 
-@line.post("/push")
+# @line.post("/push")
 async def push_message():
     for data in collection_image.find():
         data_list = []
