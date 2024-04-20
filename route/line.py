@@ -68,9 +68,17 @@ async def handle_callback(request: Request):
             continue
 
         if event.message.text == "ยืนยัน":
+            # get userID ของนักศึกษา
             if event.source.type == 'user':
                 userId = event.source.user_id
-                print(userId)
+                # เทียบหาใน database
+                for data in collection_line.find():
+                    if data["idToken"] == userId:
+                        name = data["name"]
+                        username = collection_image.find_one({"name": name})
+                        for student in collection_image.find():
+                            if student["name"] == username:
+                                collection_image.update_one({"_id": ObjectId(student["_id"])} , {"$set": {"take": True}})
             await line_bot_api.reply_message(
                 ReplyMessageRequest(                    
                     reply_token=event.reply_token,
@@ -79,6 +87,7 @@ async def handle_callback(request: Request):
                 
             )
     return 'OK'
+
 
 # @line.post("/push")
 async def push_message():
