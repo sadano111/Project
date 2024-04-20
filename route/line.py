@@ -75,10 +75,11 @@ async def handle_callback(request: Request):
                 for data in collection_line.find():
                     if data["idToken"] == userId:
                         name = data["name"]
-                        username = collection_image.find_one({"name": name})
-                        for student in collection_image.find():
-                            if student["name"] == username:
-                                collection_image.update_one({"_id": ObjectId(student["_id"])} , {"$set": {"take": True}})
+                        for m in collection_image.find():
+                            if name == m["name"] and m["take"] == False:
+                                # print("in")
+                                collection_image.update_one({"_id": ObjectId(m["_id"])}, {"$set": {"take": True}})
+
             await line_bot_api.reply_message(
                 ReplyMessageRequest(                    
                     reply_token=event.reply_token,
@@ -87,6 +88,17 @@ async def handle_callback(request: Request):
                 
             )
     return 'OK'
+
+# @line.put("/test")
+# async def test():
+#     for data in collection_line.find():
+#         if data["idToken"] == "U6282d22487c89a6ccae1c3a32c3c50b1":
+#             name = data["name"]
+#             # username = collection_image.find_one({"name": name})
+#             for m in collection_image.find():
+#                 if name == m["name"] and m["take"] == False:
+#                     print("in")
+#                     collection_image.update_one({"_id": ObjectId(m["_id"])}, {"$set": {"take": True}})       
 
 
 # @line.post("/push")
