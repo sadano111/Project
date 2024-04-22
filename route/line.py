@@ -174,10 +174,11 @@ async def verify(id_token:str):
         return json_response
     
 # get เฉพาะ ชื่อ
-@line.get("/table/{name}")
+@line.get("/table/{idToken}")
 async def get_Oneuser(idToken):
     json_response = await verify(idToken)
     sub = json_response.get('sub')
+    print(sub)
     all_users = []
     for data in collection_line.find():
         if data["idToken"] == sub:
