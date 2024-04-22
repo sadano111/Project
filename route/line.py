@@ -173,6 +173,21 @@ async def verify(id_token:str):
         json_response = response.json()
         return json_response
     
+# get เฉพาะ ชื่อ
+@line.get("/table/{name}")
+async def get_Oneuser(idToken):
+    # json_response = await verify(idToken)
+    # sub = json_response.get('sub')
+    all_users = []
+    for data in collection_line.find():
+        if data["idToken"] == idToken:
+            name = data["name"]
+            users = collection_image.find({"name": name}, {'_id': False})
+            for user in users:
+                all_users.append(user)  # เพิ่มข้อมูลที่พบในรายการทั้งหมด
+
+    return {"status": "OK", "data": all_users}
+    
 # บันทึกเฉพาะ userID 
 @line.post("/id_token", tags=["line_user"])
 async def post_users(data: lineUser):
@@ -200,12 +215,6 @@ async def find_uid(idToken:str):
 async def get_security():
     data = loginUsers_serializer(collection_userLogin.find())
     return {"status":"ok", "data":data}
-
-# ค้นหา uid ของคนนั้น
-@line.get("/finduid/{idToken}", tags=["token"])
-async def find_uid(idToken:str):
-    uid = collection_line.find_one({"idToken": idToken}, {'_id': False})
-    return {"status": "OK", "data":uid}
 
 class FollowEvent(BaseModel):
     type: str
