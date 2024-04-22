@@ -175,7 +175,7 @@ async def verify(id_token:str):
     
 # get เฉพาะ ชื่อ
 @line.get("/table/{idToken}")
-async def get_Oneuser(idToken):
+async def get_Oneuser(idToken:str):
     json_response = await verify(idToken)
     sub = json_response.get('sub')
     print(sub)
