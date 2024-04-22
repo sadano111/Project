@@ -175,10 +175,12 @@ async def verify(id_token:str):
     
 # get เฉพาะ ชื่อ
 @line.get("/table/{name}")
-async def get_Oneuser(uid):
+async def get_Oneuser(idToken):
+    json_response = await verify(idToken)
+    sub = json_response.get('sub')
     all_users = []
     for data in collection_line.find():
-        if data["idToken"] == uid:
+        if data["idToken"] == sub:
             name = data["name"]
             users = collection_image.find({"name": name}, {'_id': False})
             for user in users:
